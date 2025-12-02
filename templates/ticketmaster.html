@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+
+{% block cards %}
+    {% if numCards > 0 %}
+        <h2 class="text-body-secondary mx-2 mt-3 mb-2">{{ numCards }} results found</h2>
+
+        {% for card in cards %}
+            <div class="card mx-2 mb-4 shadow">
+                <div class="row g-0">
+                    <div class="col-lg-4 col-12 d-flex align-items-center">
+                        <img id="event-img" src="{{ card.eventImage }}" class="img-fluid rounded">
+                    </div>
+                    <div class="col-lg-4 col-6">
+                        <div class="card-body">
+                            <br>
+                            <h2 id="event-name" class="card-title">{{ card.eventName }}</h2>
+                            <br>
+                            <h3 id="event-venue" class="card-text text-body-secondary"><i class="bi bi-geo-alt-fill"></i> {{ card.venueName }}</h3>
+                            <h5 id="event-address" class="card-text"><small class="text-body-secondary">{{ card.venueAddress }}<br>{{ card.venueCity }}, {{ card.venueState }}</small></h5>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-6 p-3 text-end">
+                        <h4 id="event-time" class="card-text text-primary-emphasis">{{ card.eventDate|date:"D M j Y" }}<br>{{ card.eventHour }}</h4>
+                        <a id="event-url" href="{{ card.eventURL }}" type="button" class="btn btn-outline-primary text-end"><i class="bi bi-ticket-detailed"></i> Find Tickets</a>
+                        <br><br>
+                        {% if user.is_authenticated %}
+                            <h2><button type="button" onclick="addOrRemoveFavorite('{% url 'add_remove_favorite' card.eventID %}', {{ forloop.counter }})" class="bg-transparent border-0 text-warning text-end">
+                                {% if card.favorited %}
+                                    <i id="star-fill-{{ forloop.counter }}" class="bi bi-star-fill"></i>
+                                    <i id="star-outline-{{ forloop.counter }}" class="bi bi-star" hidden></i>
+                                {% else %}
+                                    <i id="star-outline-{{ forloop.counter }}" class="bi bi-star"></i>
+                                    <i id="star-fill-{{ forloop.counter }}" class="bi bi-star-fill" hidden></i>
+                                {% endif %}
+                            </button></h2>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <h5>Sorry... No results were found for the entered search term and city.</h5>
+    {% endif %}
+{% endblock %}
+
+
+{% block search %}
+            <div class="col-12">
+                <h1 class="fw-bold display-5 text-white mb-5">Quickly find tickets around you</h1>
+            </div>
+            <div class="col-12">
+                <div class="container mb-3 justify-content-center w-50">
+                    <form class="d-flex input-group rounded justify-content-center" action="{% url 'ticketmaster' %}" method="POST">
+                        {% csrf_token %}
+                        <input name="class" type="text" class="form-control w-25 rounded-start" list="genre-dl" placeholder="Type to search by genre" aria-label="Type to search by genre" value="{{ className }}">
+                        <input name="city" type="text" class="form-control w-25" placeholder="Enter a city e.g., Hartford" aria-label="Enter a city e.g., Hartford" value="{{ cityName }}">
+                        <input type="submit" class="form-control btn btn-primary btn-small rounded-end" value="SEARCH">
+                        <input type="hidden" name="type" value="search">
+                        <datalist id="genre-dl">
+                            <option value="Music">
+                            <option value="Sports">
+                            <option value="Theater">
+                            <option value="Family">
+                            <option value="Arts & Theater">
+                            <option value="Concerts">
+                            <option value="Comedy">
+                            <option value="Dance">
+                        </datalist>
+                    </form>
+                </div>
+            </div>
+{% endblock %}
+
+{% block noCity %}
+    {% if cityEmpty %}
+        <div class="col-12" id="alert-city">
+            <div class="d-flex text-left alert alert-danger container w-50" role="alert">
+              City cannot be empty. Please enter a city.
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}
+
+{% block noClass %}
+    {% if classEmpty %}
+        <div class="col-12" id="alert-genre">
+            <div class="d-flex text-left alert alert-danger container w-50" role="alert">
+              Search term cannot be empty. Please enter a search term.
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}
+

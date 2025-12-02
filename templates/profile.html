@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+    {% if userExists %}
+        <h1 class="text-center my-4">{{ userName }}'s Profile</h1>
+        <hr>
+        <div class="container">
+            <h2>{{ userName }}'s Favorite Events</h2>
+            {% if user.is_authenticated and user.username == userName %}
+                <button id="edit-btn" onclick="enableEdit(this)" class="mt-3 btn btn-large btn-primary">Edit Favorites</button>
+            {% endif %}
+
+            {% if numCards > 0 %}
+                <div class="mt-5">
+                {% for card in cards %}
+                    <div class="row">
+                        <div class="col-1">
+                            {% if card.display %}
+                                <form action="{% url 'profile' userName %}" method="post">
+                                    {% csrf_token %}
+                                    <button type="submit" id="up-{{ card.priority }}" class="up-button btn btn-primary" hidden><i class="bi bi-arrow-up"></i></button>
+                                    <input type="hidden" name="event-id" value="{{ card.eventID }}">
+                                    <input type="hidden" name="type" value="up">
+                                </form>
+                                    <h3 class="my-3">{{ card.priority }}.</h3>
+                                <form action="{% url 'profile' userName %}" method="post">
+                                    {% csrf_token %}
+                                    <button type="submit" id="down-{{ card.priority }}" class="down-button btn btn-primary" hidden><i class="bi bi-arrow-down"></i></button>
+                                    <input type="hidden" name="event-id" value="{{ card.eventID }}">
+                                    <input type="hidden" name="type" value="down">
+                                </form>
+                            {% endif %}
+                        </div>
+                        <div class="col-9">
+                            <div class="card mx-2 mb-4 shadow">
+                                <div class="row g-0">
+                                    <div class="col-lg-4 col-12 d-flex align-items-center">
+                                        <img id="event-img" src="{{ card.eventImage }}" class="img-fluid rounded">
+                                    </div>
+                                    <div class="col-lg-4 col-6">
+                                        <div class="card-body">
+                                            <br>
+                                            <h2 id="event-name" class="card-title">{{ card.eventName }}</h2>
+                                            <br>
+                                            <h3 id="event-venue" class="card-text text-body-secondary"><i class="bi bi-geo-alt-fill"></i> {{ card.venueName }}</h3>
+                                            <h5 id="event-address" class="card-text"><small class="text-body-secondary">{{ card.venueAddress }}<br>{{ card.venueCity }}, {{ card.venueState }}</small></h5>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-6 p-3 text-end">
+                                        <h4 id="event-time" class="card-text text-primary-emphasis">{{ card.eventDate|date:"D M j Y" }}<br>{{ card.eventHour }}</h4>
+                                        <a id="event-url" href="{{ card.eventURL }}" type="button" class="btn btn-outline-primary text-end"><i class="bi bi-ticket-detailed"></i> Find Tickets</a>
+                                        <br><br>
+                                        {% if user.is_authenticated and user.username != userName %}
+                                            <h2><button type="button" onclick="addOrRemoveFavorite('{% url 'add_remove_favorite' card.eventID %}', {{ forloop.counter }})" class="bg-transparent border-0 text-warning text-end">
+                                                {% if card.favorited %}
+                                                    <i id="star-fill-{{ forloop.counter }}" class="bi bi-star-fill"></i>
+                                                    <i id="star-outline-{{ forloop.counter }}" class="bi bi-star" hidden></i>
+                                                {% else %}
+                                                    <i id="star-outline-{{ forloop.counter }}" class="bi bi-star"></i>
+                                                    <i id="star-fill-{{ forloop.counter }}" class="bi bi-star-fill" hidden></i>
+                                                {% endif %}
+                                            </button></h2>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-2 col-12 d-flex align-items-center justify-content-center">
+                            <form action="{% url 'profile' userName %}" method="post">
+                                {% csrf_token %}
+                                <button type="submit" class="delete-button btn btn-lg btn-outline-danger border-0 btn-xl" hidden><i class="bi bi-trash"></i></button>
+                                <input type="hidden" name="event-id" value="{{ card.eventID }}">
+                                <input type="hidden" name="type" value="delete">
+                            </form>
+                            <form action="{% url 'profile' userName %}" method="post">
+                                {% csrf_token %}
+                                <button type="submit" class="display-button btn btn-lg btn-outline-secondary border-0 btn-xl" hidden>
+                                    {% if card.display %}
+                                        <i class="bi bi-eye"></i>
+                                    {% else %}
+                                        <i class="bi bi-eye-slash"></i>
+                                    {% endif %}
+                                </button>
+                                <input type="hidden" name="event-id" value="{{ card.eventID }}">
+                                <input type="hidden" name="type" value="display">
+                            </form>
+                        </div>
+                    </div>
+
+                    {% if user.is_authenticated and user.username == userName and forloop.counter == maxPriority and maxPriority < numCards %}
+                        <hr>
+                        <h2 class="mb-3">Privately Saved Events</h2>
+                    {% endif %}
+                {% endfor %}
+                </div>
+            {% else %}
+                <h5>This user has no publicly saved events.</h5>
+            {% endif %}
+        </div>
+    {% else %}
+        <h1 class="text-center">Sorry, No User Exists With That Name</h1>
+    {% endif %}
+{% endblock %}
+
+{% block jscript %}
+    <script>
+        {% for message in messages %}
+            {% if message.message == "edit" %}
+                enableEdit(document.getElementById("edit-btn"));
+            {% endif %}
+        {% endfor %}
+        document.getElementById("up-1").disabled = true;
+        document.getElementById("down-{{ maxPriority }}").disabled = true;
+
+        function enableEdit(button) {
+            if (button.innerText === "Edit Favorites") {
+                button.innerText = "Stop Editing"
+                document.querySelectorAll(".up-button, .down-button, .delete-button, .display-button").forEach(function unhide(button) {
+                   button.hidden = false;
+                });
+            } else {
+                button.innerText = "Edit Favorites"
+                document.querySelectorAll(".up-button, .down-button, .delete-button, .display-button").forEach(function unhide(button) {
+                   button.hidden = true;
+                });
+            }
+        }
+    </script>
+{% endblock %}

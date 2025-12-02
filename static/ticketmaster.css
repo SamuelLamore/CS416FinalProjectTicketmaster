@@ -1,0 +1,38 @@
+
+:root {
+    --tb: #1F2125;
+    --bg: #F5F7F9;
+}
+
+[data-theme="dark"] {
+    --tb: #151719;
+    --bg: #202225;
+
+    --bs-body-bg: #1a1c1e;
+    --bs-body-color: #e8e8e8;
+    --bs-secondary-color: #cacaca;
+    --bs-primary-text-emphasis: #9ec5ff;
+
+    --bs-primary: #86b7ff;
+    --bs-secondary: #cacaca;
+    --bs-success: #5cd68b;
+    --bs-danger: #ff7b7b;
+}
+
+
+body {
+    background-color: var(--bg);
+}
+
+#top-bar {
+    background-color: var(--tb);
+}
+
+#results {
+    width: 90%;
+}
+
+.btn-xl {
+    font-size: 2rem;
+    padding: 1rem 1.5rem;
+}
