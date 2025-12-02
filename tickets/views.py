@@ -213,7 +213,7 @@ def profile_view(request, user):
                 messages.info(request, "edit")
             return redirect(request.path)
         else:
-            return redirect(f"../{request.POST["user"]}")
+            return redirect(f"../{request.POST['user']}")
 
     cardList = []
     maxPriority = 1
@@ -266,4 +266,5 @@ def update_fav_priority(request, neg, eventid):
 
     return JsonResponse({
         "id": eventid,
+
     })
