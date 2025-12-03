@@ -1,4 +1,7 @@
         document.documentElement.setAttribute("data-theme", localStorage.getItem("theme"));
+        if (localStorage.getItem("theme") === "dark") {
+            document.getElementById('theme-btn').innerHTML = `<i class="bi bi-sun-fill"></i>`;
+        }
         function addOrRemoveFavorite(url, num) {
             event.preventDefault();
             $.ajax({
